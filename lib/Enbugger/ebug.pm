@@ -27,11 +27,35 @@ don't immediately know how to hook it up properly.
 
 =cut
 
-sub _load_debugger;
+use vars qw( @ISA @Symbols );
+BEGIN { @ISA = 'Enbugger' }
 
-sub _stop;
+sub _load_debugger {
+    my ( $class ) = @_;
+    
+    $class->_compile_with_nextstate();
+    require Devel::ebug::Backend;
+    $class->_compile_with_dbstate();
+    
+    $class->init_debugger;
+    
+    return;
+}
 
-sub _write;
+1 if $DB::signal;
+sub _stop {
+
+    # perl5db looks for this to stop.
+    $DB::signal = 1;
+
+    # Use at least the default debug flags.
+    $^P |= 0x33f;
+
+    return;
+}
+
+# sub _write {
+# }
 
 # Load up a list of symbols known to be associated with this
 # debugger. Enbugger, the base class will use this to guess at which

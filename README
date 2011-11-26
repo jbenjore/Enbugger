@@ -168,6 +168,11 @@ PLUGGABLE DEBUGGERS
         This is the default perl debugger. See also Enbugger::perl5db and
         perl5db.pl.
 
+    trepan
+        This is the Devel::Trepan debugger. See also Devel::Trepan or
+        https://github.com/rocky/Perl-Devel-Trepan.
+
+
   Registering your own debugger
     While I've attempted to register some debuggers by by default, you may
     need to write your own Enbugger::$foo class to register your own
@@ -228,11 +233,3 @@ COPYRIGHT AND LICENCE
     Free Software Foundation (either version 2 or any later version) and the
     Perl Artistic License as published by O’Reilly Media, Inc. Please open
     the files named gpl-2.0.txt and Artistic for a copy of these licenses.
-
-POD ERRORS
-    Hey! The above document had some coding errors, which are explained
-    below:
-
-    Around line 259:
-        You forgot a '=back' before '=head2'
-

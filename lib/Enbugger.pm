@@ -471,6 +471,7 @@ sub import {
 
 BEGIN {
     __PACKAGE__->register_debugger( 'perl5db' );
+    __PACKAGE__->register_debugger( 'trepan' );
     __PACKAGE__->register_debugger( 'NYTProf' );
 }
 # TODO: __PACKAGE__->register_debugger( 'ebug' );

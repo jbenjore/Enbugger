@@ -310,6 +310,12 @@ only the L<perl5db.pl> debugger has received any testing.
 
 This is the default perl debugger. See also L<Enbugger::perl5db> and L<perl5db.pl>.
 
+=item trepan
+
+This is the L<Devel::Trepan> debugger. See also L<Devel::Trepan> or
+L<https://github.com/rocky/Perl-Devel-Trepan>.
+
+
 =cut
 
 #=item ebug

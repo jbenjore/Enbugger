@@ -21,6 +21,7 @@ lib/Enbugger/OnError.pm
 lib/Enbugger/perl5db.pm
 lib/Enbugger/ptkdb.pm
 lib/Enbugger/sdb.pm
+lib/Enbugger/trepan.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
@@ -36,4 +37,7 @@ t/nytprof.pl
 t/nytprof.t
 t/Term/Rendezvous.pm
 t/Test/Enbugger.pm
+t/trepantest.cmd
+t/trepantest.pl
+t/trepantest.t
 TODO

@@ -40,7 +40,7 @@ USING THE DEBUGGER
       use Enbugger;
       Enbugger->load_debugger( 'perl5db' );
 
-    You can specific a default debugger:
+    You can specify a default debugger:
 
       $Enbugger::DefaultDebugger = 'perl5db';
 
@@ -174,7 +174,7 @@ PLUGGABLE DEBUGGERS
 
 
   Registering your own debugger
-    While I've attempted to register some debuggers by by default, you may
+    While I've attempted to register some debuggers by default, you may
     need to write your own Enbugger::$foo class to register your own
     debugger. Currently there is no way to use an unknown debugger without
     first writing an Enbugger subclass.

@@ -56,7 +56,8 @@ sub _load_debugger {
 =item CLASS-E<gt>_stop ( [OPTION_HASH_REF] )
 
 Set to stop at the next stopping point. OPTIONS_HASH_REF is an
-optional hash reference which can be used to things in the debugger.
+optional hash reference which can be used to set options in the
+debugger.
 
 =cut
 
@@ -74,8 +75,8 @@ sub _stop {
     $^P |= 0x73f;
     $DB::event = 'debugger-call';
     my ($pkg, $filename, $line) = caller;
-    if ($filename =~ /^\(eval \d+\)/) {
-	@DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+    if ($filename =~ /^\(eval (?:\d+(?:[:].+)?)\)/) {
+        @DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
     }
     $DB::in_debugger = 0;
     return;

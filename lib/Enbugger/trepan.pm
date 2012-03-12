@@ -88,7 +88,7 @@ sub _stop {
 sub _write {
 
     for my $c (@DB::clients) {
-	$c->output(@_);
+        $c->output(@_);
     }
     return;
 }

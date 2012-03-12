@@ -28,8 +28,6 @@ use vars qw( @ISA @Symbols );
 BEGIN { @ISA = 'Enbugger' }
 
 
-
-
 =head1 OVERRIDEN METHODS
 
 =over
@@ -43,6 +41,7 @@ sub _load_debugger {
 
     $class->_compile_with_nextstate();
     require Devel::Trepan::Core;
+    $^P |= 0x73f;
     $class->_compile_with_dbstate();
 
     $class->init_debugger;
@@ -70,8 +69,14 @@ sub _stop {
     # trepan looks for these to stop.
     $DB::in_debugger = 1;
     $DB::signal = 2;
-    # Use at least the default debug flags.
-    $^P |= 0x33f;
+    # Use at least the default debug flags and 
+    # eval string saving.
+    $^P |= 0x73f;
+    $DB::event = 'debugger-call';
+    my ($pkg, $filename, $line) = caller;
+    if ($filename =~ /^\(eval \d+\)/) {
+	@DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+    }
     $DB::in_debugger = 0;
     return;
 }
@@ -86,10 +91,10 @@ sub _stop {
 
 1 if $DB::OUT;
 sub _write {
-    my $class = shift @_;
 
-    print { $DB::OUT } @_;
-
+    for my $c (@DB::clients) {
+	$c->output(@_);
+    }
     return;
 }
 
@@ -111,7 +116,7 @@ sub _write {
 1 if %Enbugger::RegisteredDebuggers;
 $Enbugger::RegisteredDebuggers{trepan}{symbols} = [qw[
     DB
-    sub
+    subs
     eval_with_return
     save
 ]];

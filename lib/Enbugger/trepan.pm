@@ -76,7 +76,11 @@ sub _stop {
     $DB::event = 'debugger-call';
     my ($pkg, $filename, $line) = caller;
     if ($filename =~ /^\(eval (?:\d+(?:[:].+)?)\)/) {
-        @DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+        unless (scalar @DB::dbline) {
+            # print "Dude - you don't have \@DB::dbline set." .
+            #   "I'm setting it now...\n";
+            @DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+        }
     }
     $DB::in_debugger = 0;
     return;

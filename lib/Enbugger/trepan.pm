@@ -4,6 +4,7 @@ package Enbugger::trepan;
 #
 # Copyright (C) 2007,2008 WhitePages.com, Inc. with primary
 # development by Joshua ben Jore.
+# Copyright (C) 2012 R. Bernstein
 #
 # This program is distributed WITHOUT ANY WARRANTY, including but not
 # limited to the implied warranties of merchantability or fitness for
@@ -20,10 +21,11 @@ package Enbugger::trepan;
 =head1 NAME
 
 Enbugger::trepan - subclass for the extraordinary trepanning debugger
+
 =cut
 
-
 use strict;
+use Scalar::Util qw(dualvar);
 use vars qw( @ISA @Symbols );
 BEGIN { @ISA = 'Enbugger' }
 
@@ -49,9 +51,36 @@ sub _load_debugger {
     return;
 }
 
-
-
-
+# Internal routine to create dual numeric/string values for
+# @DB::dbline. Uses B::CodeLines to do the heavy lifting.
+sub _dualvar_lines {
+    my $eval_string = shift;
+    my @eval_ary = split("\n", $eval_string);
+    my @break_line = ();
+    my $output = `$^X -MO=CodeLines,-exec -e '$eval_string' 2>/dev/null`;
+    if (0 == ($? >> 8)) {
+	my @lines = split("\n", $output);
+	foreach my $line (@lines) {
+	    next unless $line =~ /^\d+$/;
+	    $break_line[$line] = $line;
+	}
+    # } else {
+    # 	print "You probably don't have B::CodeLines installed\n";
+    }
+    for (my $i = 0; $i <= $#eval_ary; $i++) {
+	my $num = exists $break_line[$i+1] ? 1 : 0;
+	$eval_ary[$i] = dualvar($num, $eval_ary[$i] . "\n");
+    }
+    # # For debugging
+    # for (my $i = 1; $i < scalar(@eval_ary); $i++) {
+    #     if ($eval_ary[$i] != 0) {
+    # 	print "Line $i is breakable:\n${eval_ary[$i]}\n";
+    #     } else {
+    # 	print "Line $i is not breakable:\n${eval_ary[$i]}\n";
+    #     }
+    # }
+    return \@eval_ary;
+}
 
 =item CLASS-E<gt>_stop ( [OPTION_HASH_REF] )
 
@@ -62,6 +91,7 @@ debugger.
 =cut
 
 1 if $DB::signal;
+
 sub _stop {
 
     my ($self, $opts) = @_;
@@ -79,7 +109,7 @@ sub _stop {
         unless (scalar @DB::dbline) {
             # print "Dude - you don't have \@DB::dbline set." .
             #   "I'm setting it now...\n";
-            @DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+            @DB::dbline = @{&_dualvar_lines($DB::eval_string)};
         }
     }
     $DB::in_debugger = 0;

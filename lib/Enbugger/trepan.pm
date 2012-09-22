@@ -153,7 +153,7 @@ $Enbugger::RegisteredDebuggers{trepan}{symbols} = [qw[
     DB
     subs
     eval_with_return
-    save
+    save_vars
 ]];
 
 ## Local Variables:

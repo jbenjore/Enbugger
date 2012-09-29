@@ -394,6 +394,7 @@ sub dualvar_lines {
         if ( not open $fh, '<', $file_or_string ) {
             Carp::croak( "Can't open $file_or_string for reading: $!" );
         }
+        my $text = <$fh>;
         @text = <$fh>;
         $cmd = "$^X -MO=CodeLines $file_or_string";
 

@@ -51,37 +51,6 @@ sub _load_debugger {
     return;
 }
 
-# Internal routine to create dual numeric/string values for
-# @DB::dbline. Uses B::CodeLines to do the heavy lifting.
-sub _dualvar_lines {
-    my $eval_string = shift;
-    my @eval_ary = split("\n", $eval_string);
-    my @break_line = ();
-    my $output = `$^X -MO=CodeLines,-exec -e '$eval_string' 2>/dev/null`;
-    if (0 == ($? >> 8)) {
-	my @lines = split("\n", $output);
-	foreach my $line (@lines) {
-	    next unless $line =~ /^\d+$/;
-	    $break_line[$line] = $line;
-	}
-    # } else {
-    # 	print "You probably don't have B::CodeLines installed\n";
-    }
-    for (my $i = 0; $i <= $#eval_ary; $i++) {
-	my $num = exists $break_line[$i+1] ? 1 : 0;
-	$eval_ary[$i] = dualvar($num, $eval_ary[$i] . "\n");
-    }
-    # # For debugging
-    # for (my $i = 1; $i < scalar(@eval_ary); $i++) {
-    #     if ($eval_ary[$i] != 0) {
-    # 	print "Line $i is breakable:\n${eval_ary[$i]}\n";
-    #     } else {
-    # 	print "Line $i is not breakable:\n${eval_ary[$i]}\n";
-    #     }
-    # }
-    return \@eval_ary;
-}
-
 =item CLASS-E<gt>_stop ( [OPTION_HASH_REF] )
 
 Set to stop at the next stopping point. OPTIONS_HASH_REF is an
@@ -106,11 +75,9 @@ sub _stop {
     $DB::event = 'debugger-call';
     my ($pkg, $filename, $line) = caller;
     if ($filename =~ /^\(eval (?:\d+(?:[:].+)?)\)/) {
-        unless (scalar @DB::dbline) {
-            # print "Dude - you don't have \@DB::dbline set." .
-            #   "I'm setting it now...\n";
-            @DB::dbline = @{&_dualvar_lines($DB::eval_string)};
-        }
+        Enbugger->load_file($filename, $DB::eval_string, 1);
+    } else {
+        Enbugger->load_file($filename, undef, 1);
     }
     $DB::in_debugger = 0;
     return;

@@ -331,11 +331,13 @@ sub load_source {
     my ( $class ) = @_;
 
     # Load the original program.
-    $class->load_file($0);
+    # FIXME: can $0 be an pseudo-file eval name? If so, 
+    # we should test it here.
+    $class->load_file($0, 0, undef, 1);
 
     # Load all modules.
     for ( grep { defined and -e } values %INC ) {
-        $class->load_file($_);
+        $class->load_file($_, 0, undef, 0);
     }
 
     $class->initialize_dbline;
@@ -366,13 +368,66 @@ sub initialize_dbline {
 
 
 
-sub load_file {
+# Routine to create dual numeric/string values for
+# C<$file_or_string>. A list reference is returned. In string context
+# it is the line with a trailing "\n". In a numeric context it is 0 or
+# 1 if $mark_trace is set and B::CodeLines determines it is a trace
+# line.
+#
+# Note: Perl implementations seem to put a COP address inside
+# @DB::db_line when there are trace lines. I am not sure if this is
+# specified as part of the API. We # don't do that here but (and might
+# even if it is not officially defined in the API.) Instead put value
+# 1.
+#
+# FIXME: $mark_trace may be something of a hack. Without it we can
+# get into infinite regress in marking %INC modules.
+sub dualvar_lines {
+    my ($file_or_string, $is_file, $mark_trace) = @_;
+    my @break_line = ();
+    my @dualvar_line;
+
+    # Setup for B::CodeLines and for reading file lines
+    my ($cmd, @text);
+    if ($is_file) {
+        my $fh;
+        if ( not open $fh, '<', $file_or_string ) {
+            Carp::croak( "Can't open $file_or_string for reading: $!" );
+        }
+        @text = <$fh>;
+        $cmd = "$^X -MO=CodeLines $file_or_string";
+
+    } else {
+        @text = split("\n", $file_or_string);
+        $cmd = "$^X -MO=CodeLines,-exec -e '$file_or_string'";
+    }
+    unshift @text, undef;
+
+    # Get trace lines from B::CodeLines
+    my $fh;
+    # FIXME: remove 2>/dev/null and do the Perlish way.
+    if ($mark_trace and open($fh, '-|', "$cmd 2>/dev/null")) {
+        while (my $line=<$fh>) {
+            next unless $line =~ /^\d+$/;
+            $break_line[$line] = $line;
+        }
+    }
+
+    # Create dual variable array.
+    for (my $i = 1; $i < scalar @text; $i++) {
+        my $num = exists $break_line[$i] ? $mark_trace : 0;
+        $dualvar_line[$i] = Scalar::Util::dualvar($num, $text[$i] . "\n");
+    }
+    return (@dualvar_line);
+}
+
+sub load_file_old {
     my ($class, $file) = @_;
-    
+
     # The symbols by which we'll know ye.
     my $base_symname = "_<$file";
     my $symname          = "main::$base_symname";
-    
+
     no strict 'refs';
 
     if ( not @$symname and -f $file ) {
@@ -382,7 +437,7 @@ sub load_file {
         if ( not open $fh, '<', $file ) {
             Carp::croak( "Can't open $file for reading: $!" );
         }
-        
+
         # Load our source code. All source must be installed as at least PVIV or
         # some asserts in op.c may fail. Later, I'll assign better pointers to each
         # line in instrument_op.
@@ -393,14 +448,31 @@ sub load_file {
                      readline $fh
                     );
     }
-    
+
     $$symname ||= $file;
-    
+
     return;
 }
 
+# FIXME: $mark_trace may be something of a hack. Without it we can
+# get into infinite regress in marking %INC modules.
+sub load_file {
+    my ($class, $filename, $eval_string, $mark_trace) = @_;
 
+    # The symbols by which we'll know ye.
+    my $base_symname = "_<$filename";
+    my $symname      = "main::$base_symname";
 
+    no strict 'refs';
+    if (defined($eval_string)) {
+        @$symname = dualvar_lines($eval_string, 0, 1);
+    } else {
+        @$symname = dualvar_lines($filename, 1, $mark_trace);
+    }
+    $$symname ||= $filename;
+
+    return;
+}
 
 
 

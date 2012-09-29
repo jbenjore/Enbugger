@@ -401,6 +401,8 @@ sub dualvar_lines {
         @text = split("\n", $file_or_string);
         $cmd = "$^X -MO=CodeLines,-exec -e '$file_or_string'";
     }
+
+    # Make text data be 1-origin rather than 0-origin.
     unshift @text, undef;
 
     # Get trace lines from B::CodeLines

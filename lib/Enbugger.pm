@@ -205,7 +205,7 @@ sub load_debugger {
     # Compare all registered debuggers to our process.
     my %debugger_matches;
     for my $debugger ( keys %REGISTERED_DEBUGGERS ) {
-        
+
         # Find the intersection vs the difference.
         my $intersection = 0;
         my %match = %debugger_symbols;
@@ -214,12 +214,12 @@ sub load_debugger {
                 ++ $intersection;
             }
         }
-        
+
         # Score.
         my $difference =
           keys(%match) - $intersection;
         my $score = $difference / $intersection;
-        
+
         $debugger_matches{$debugger} = $score;
     }
 
@@ -227,8 +227,8 @@ sub load_debugger {
     my ( $best_debugger ) =
       sort { $debugger_matches{$a} <=> $debugger_matches{$b} }
         keys %debugger_matches;
-    
-    
+
+
     # It is ok to replace the null debugger but an error to replace
     # anything else. Also, there's nothing to do if we've already
     # loaded the requested debugger.
@@ -292,7 +292,7 @@ sub _load_debugger;
 
 sub register_debugger {
     my ( $class, $debugger ) = @_;
-    
+
     # name -> class
     my $enbugger_subclass = "Enbugger::$debugger";
 
@@ -331,7 +331,7 @@ sub load_source {
     my ( $class ) = @_;
 
     # Load the original program.
-    # FIXME: can $0 be an pseudo-file eval name? If so, 
+    # FIXME: can $0 be an pseudo-file eval name? If so,
     # we should test it here.
     $class->load_file($0, 0, undef, 1);
 
@@ -421,41 +421,16 @@ sub dualvar_lines {
     return (@dualvar_line);
 }
 
-sub load_file_old {
-    my ($class, $file) = @_;
-
-    # The symbols by which we'll know ye.
-    my $base_symname = "_<$file";
-    my $symname          = "main::$base_symname";
-
-    no strict 'refs';
-
-    if ( not @$symname and -f $file ) {
-        # Read the source.
-        # Open the file.
-        my $fh;
-        if ( not open $fh, '<', $file ) {
-            Carp::croak( "Can't open $file for reading: $!" );
-        }
-
-        # Load our source code. All source must be installed as at least PVIV or
-        # some asserts in op.c may fail. Later, I'll assign better pointers to each
-        # line in instrument_op.
-        local $/ = "\n";
-        @$symname = (
-                     undef,
-                     map { Scalar::Util::dualvar( 0, $_ ) }
-                     readline $fh
-                    );
-    }
-
-    $$symname ||= $file;
-
-    return;
-}
+# Somewhat simulates what Perl does in reading a file when debugging is
+# turned on. We save a a list under I<_E<gt>$filename> where each line
+# has a dual variable nature. In numeric context, each entry of the list
+# is I<true> if that line is traceable or break-pointable (is the address
+# of a COP instruction). In a non-numeric context, each entry is a string
+# of the line contents including the trailing C<\n>.
 
 # FIXME: $mark_trace may be something of a hack. Without it we can
 # get into infinite regress in marking %INC modules.
+
 sub load_file {
     my ($class, $filename, $eval_string, $mark_trace) = @_;
 
@@ -480,11 +455,11 @@ sub load_file {
 sub instrument_runtime {
     # Now do the *real* work.
     my ( $class ) = @_;
-    
+
     # Load the source code for all loaded files. Too bad about (eval 1)
     # though. This doesn't work. Why not!?!
     $class->load_source;
-    
+
     B::Utils::walkallops_simple( \ &Enbugger::instrument_op );
 }
 

@@ -386,18 +386,18 @@ sub dualvar_lines {
     my ($file_or_string, $is_file, $mark_trace) = @_;
     my @break_line = ();
     my @dualvar_line;
+    local $/ = "\n";
 
     # Setup for B::CodeLines and for reading file lines
     my ($cmd, @text);
+    my $fh;
     if ($is_file) {
-        my $fh;
         if ( not open $fh, '<', $file_or_string ) {
             Carp::croak( "Can't open $file_or_string for reading: $!" );
         }
-        my $text = <$fh>;
-        @text = <$fh>;
+        @text = readline $fh;
         $cmd = "$^X -MO=CodeLines $file_or_string";
-
+	close $fh;
     } else {
         @text = split("\n", $file_or_string);
         $cmd = "$^X -MO=CodeLines,-exec -e '$file_or_string'";
@@ -407,7 +407,6 @@ sub dualvar_lines {
     unshift @text, undef;
 
     # Get trace lines from B::CodeLines
-    my $fh;
     # FIXME: remove 2>/dev/null and do the Perlish way.
     if ($mark_trace and open($fh, '-|', "$cmd 2>/dev/null")) {
         while (my $line=<$fh>) {

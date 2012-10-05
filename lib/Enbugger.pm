@@ -82,7 +82,7 @@ use Carp ();
 use Scalar::Util ();
 
 # Public class settings.
-use vars qw( $DefaultDebugger );
+use vars qw( $DefaultDebugger @ignore_module_pats);
 
 use constant (); # just to load it.
 
@@ -127,7 +127,7 @@ SRC
 
 
 
-BEGIN { $DefaultDebugger = 'perl5db' }
+BEGIN { $DefaultDebugger = 'perl5db'; @ignore_module_pats = (); }
 
 sub DEBUGGER_CLASS () {
     unless ( defined $DEBUGGER_CLASS ) {
@@ -335,8 +335,15 @@ sub load_source {
     # we should test it here.
     $class->load_file($0, 0, undef, 1);
 
+    # Get list of files to process ingoring things to ignore;
+    my @scripts = values %INC;
+    if (scalar @ignore_module_pats) {
+	my $ignore_script_pat = join('|', @ignore_module_pats);
+	@scripts = grep(!/$ignore_script_pat/, @scripts);
+    }
+
     # Load all modules.
-    for ( grep { defined and -e } values %INC ) {
+    for ( grep { defined and -e } @scripts ) {
         $class->load_file($_, 0, undef, 0);
     }
 

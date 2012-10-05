@@ -145,6 +145,14 @@ PUBLIC API
     $Enbugger::DefaultDebugger
         The default debugger. This is "perl5db" unless you change it.
 
+    @Enbugger::ignore_module_pats
+
+        When entering the debugger, %INC is scanned for a list of files to
+	process. If you have a large debugger like Devel::Trepan, or the
+	program you are debugging is large, loading can take a while. 
+	If there are some Perl modules or large modules you want skip debug
+	setup, then set this variable. The default is ().
+
     CLASS->write( TEXT )
         Writes some thing to the console or wherever is appropriate for your
         current debugger.

@@ -338,8 +338,8 @@ sub load_source {
     # Get list of files to process ingoring things to ignore;
     my @scripts = values %INC;
     if (scalar @ignore_module_pats) {
-	my $ignore_script_pat = join('|', @ignore_module_pats);
-	@scripts = grep(!/$ignore_script_pat/, @scripts);
+        my $ignore_script_pat = join('|', @ignore_module_pats);
+        @scripts = grep(!/$ignore_script_pat/, @scripts);
     }
 
     # Load all modules.
@@ -404,7 +404,7 @@ sub dualvar_lines {
         }
         @text = readline $fh;
         $cmd = "$^X -MO=CodeLines $file_or_string";
-	close $fh;
+        close $fh;
     } else {
         @text = split("\n", $file_or_string);
         $cmd = "$^X -MO=CodeLines,-exec -e '$file_or_string'";

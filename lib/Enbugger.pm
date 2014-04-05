@@ -259,7 +259,7 @@ sub load_debugger {
     # to hack if you /do/ want to make debugging a debugger a
     # possibility.
     #
-    # Further, note that some debugger supports have already been loaded 
+    # Further, note that some debugger supports have already been loaded
     # by __PACKAGE__->register_debugger(...) below. In general, this
     # is for things I've needed to use myself.
     Enbugger->_compile_with_nextstate();
@@ -304,7 +304,7 @@ sub register_debugger {
     # Load it. *Assume* PL_ppaddr[OP_NEXTSTATE] is something
     # useful like Perl_pp_nextstate still.
     #
-    # TODO: localize PL_ppaddr[OP_NEXTSTATE] during this compilation to 
+    # TODO: localize PL_ppaddr[OP_NEXTSTATE] during this compilation to
     # be Perl_pp_nextstate.
     require $enbugger_subclass_file;
 
@@ -335,7 +335,7 @@ sub load_source {
     # we should test it here.
     $class->load_file($0, 0, undef, 1);
 
-    # Get list of files to process ingoring things to ignore;
+    # Get list of files to process ignoring things to ignore;
     my @scripts = values %INC;
     if (scalar @ignore_module_pats) {
         my $ignore_script_pat = join('|', @ignore_module_pats);

@@ -70,7 +70,7 @@ sub _stop {
     # trepan looks for these to stop.
     $DB::in_debugger = 1;
     $DB::signal = 2;
-    # Use at least the default debug flags and 
+    # Use at least the default debug flags and
     # eval string saving.
     $^P |= 0x73f;
     $DB::event = 'debugger-call';

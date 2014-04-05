@@ -29,6 +29,7 @@ README
 t/10load.t
 t/11load.pl
 t/11load.t
+t/12dualvar.t
 t/20error.t
 t/21error.t
 t/22signal.t

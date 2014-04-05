@@ -4,6 +4,7 @@ package Enbugger::trepan;
 #
 # Copyright (C) 2007,2008 WhitePages.com, Inc. with primary
 # development by Joshua ben Jore.
+# Copyright (C) 2012 R. Bernstein
 #
 # This program is distributed WITHOUT ANY WARRANTY, including but not
 # limited to the implied warranties of merchantability or fitness for
@@ -20,10 +21,11 @@ package Enbugger::trepan;
 =head1 NAME
 
 Enbugger::trepan - subclass for the extraordinary trepanning debugger
+
 =cut
 
-
 use strict;
+use Scalar::Util qw(dualvar);
 use vars qw( @ISA @Symbols );
 BEGIN { @ISA = 'Enbugger' }
 
@@ -39,6 +41,7 @@ BEGIN { @ISA = 'Enbugger' }
 sub _load_debugger {
     my ( $class ) = @_;
 
+    @Enbugger::ignore_module_pats = ('Devel/Trepan');
     $class->_compile_with_nextstate();
     require Devel::Trepan::Core;
     $^P |= 0x73f;
@@ -49,18 +52,16 @@ sub _load_debugger {
     return;
 }
 
-
-
-
-
 =item CLASS-E<gt>_stop ( [OPTION_HASH_REF] )
 
 Set to stop at the next stopping point. OPTIONS_HASH_REF is an
-optional hash reference which can be used to things in the debugger.
+optional hash reference which can be used to set options in the
+debugger.
 
 =cut
 
 1 if $DB::signal;
+
 sub _stop {
 
     my ($self, $opts) = @_;
@@ -69,13 +70,15 @@ sub _stop {
     # trepan looks for these to stop.
     $DB::in_debugger = 1;
     $DB::signal = 2;
-    # Use at least the default debug flags and 
+    # Use at least the default debug flags and
     # eval string saving.
     $^P |= 0x73f;
     $DB::event = 'debugger-call';
     my ($pkg, $filename, $line) = caller;
-    if ($filename =~ /^\(eval \d+\)/) {
-	@DB::dbline = map "$_\n", split(/\n/, $DB::eval_string);
+    if ($filename =~ /^\(eval (?:\d+(?:[:].+)?)\)/) {
+        Enbugger->load_file($filename, $DB::eval_string, 1);
+    } else {
+        Enbugger->load_file($filename, undef, 1);
     }
     $DB::in_debugger = 0;
     return;
@@ -93,7 +96,7 @@ sub _stop {
 sub _write {
 
     for my $c (@DB::clients) {
-	$c->output(@_);
+        $c->output(@_);
     }
     return;
 }
@@ -118,7 +121,7 @@ $Enbugger::RegisteredDebuggers{trepan}{symbols} = [qw[
     DB
     subs
     eval_with_return
-    save
+    save_vars
 ]];
 
 ## Local Variables:

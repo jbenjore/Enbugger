@@ -39,6 +39,7 @@ BEGIN { @ISA = 'Enbugger' }
 sub _load_debugger {
     my ( $class ) = @_;
 
+    @Enbugger::ignore_module_pats = ('Devel/Trepan');
     $class->_compile_with_nextstate();
     require Devel::Trepan::Core;
     $^P |= 0x73f;

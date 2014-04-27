@@ -39,7 +39,8 @@ BEGIN { @ISA = 'Enbugger' }
 sub _load_debugger {
     my ( $class ) = @_;
 
-    @Enbugger::ignore_module_pats = ('Devel/Trepan');
+    @Enbugger::ignore_module_pats =
+      qw(/Devel/Trepan /Enbugger/ /Enbugger.pm);
     $class->_compile_with_nextstate();
     require Devel::Trepan::Core;
     $^P |= 0x73f;
@@ -70,7 +71,7 @@ sub _stop {
     # trepan looks for these to stop.
     $DB::in_debugger = 1;
     $DB::signal = 2;
-    # Use at least the default debug flags and 
+    # Use at least the default debug flags and
     # eval string saving.
     $^P |= 0x73f;
     $DB::event = 'debugger-call';

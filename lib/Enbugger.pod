@@ -1,3 +1,4 @@
+=encoding utf8
 
 =head1 NAME
 
@@ -71,17 +72,17 @@ how you'd do it if you wanted to implement this feature.
 
 =over
 
-=item #
+=item *
 
 Set the various C pointers set by Perl_init_debugger to NULL
 
-=item #
+=item *
 
 Clear the DB:: package. Beware of the C<DB> and C<sub> functions. If
 you ever load another debugger again you'll need to ensure you have at
 least stub functions left or you could suffer a fatal, deadly death.
 
-=item #
+=item *
 
 Change all C<dbstate> B::COP nodes back to be C<nextstate> ops.
 
@@ -114,15 +115,15 @@ If you load the L<Enbugger::OnError> module, you can use unhandled
 exceptions or UNIX signals as break points. In addition, loading the
 debugger is deferred until your signal or exception is triggered.
 
-I like using this with both die() and SIGUSR1 handled enough that both
+I like using this with both C<die()> and C<SIGUSR1> handled enough that both
 are the default for handling.
 
   use Enbugger::OnError;
   use Enbugger::OnError qw( __DIE__ USR1 ); # equivalent
 
 A program using the above line will trigger a break point whenever an
-unhandled die() occurs or whenever the USR1 signal is received. To use
-other signals, just specify them at the use().
+unhandled C<die()> occurs or whenever the C<USR1> signal is received. To use
+other signals, just specify them at the C<use()>.
 
   use Enbugger::OnError qw( USR1 USR2 INT HUP );
 
@@ -227,7 +228,7 @@ Receive a perl debugger.
   Enter h or `h h' for help, or `man perldebug' for more help.
 
   $2 = (void *) 0x85c000
-  (gdb) 
+  (gdb)
   main::((eval 16)[-e:1]:1):eval{warn q(stopping);require Enbugger;Enbugger->stop};print STDERR $@
     DB<1> p "Hi, I am in perl verson $] now"
   Hi, I am in perl verson 5.010000 now
